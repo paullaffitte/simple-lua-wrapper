@@ -93,7 +93,7 @@ namespace slw {
 
 		template <typename DATA>
 		DATA
-		to(int idx) const {
+		to(int) const {
 			throw std::runtime_error(std::string("Unable to get from stack, type with mangled name '") + typeid(DATA).name() + "' is invalid.");
 		}
 
@@ -101,7 +101,7 @@ namespace slw {
 		void
 		toMany(ToManyCallback<DATAS...> const& callback)
 		{
-			_toMany<DATAS...>(callback, -1 - sizeof...(DATAS));
+			_toMany<DATAS...>(callback, -1 - static_cast<long int>(sizeof...(DATAS)));
 		};
 
 	private:
@@ -120,10 +120,10 @@ namespace slw {
 			_pushMany<DATAS...>(datas...);
 		};
 
-		template <typename=void> void _toMany(std::function<void ()> const& callback, int) { callback(); };
+		template <typename=void> void _toMany(std::function<void ()> const& callback, long int) { callback(); };
 		template <typename DATA, typename... DATAS>
 		void
-		_toMany(std::function<void (DATA const&, DATAS const&...)> const& callback, int idx)
+		_toMany(std::function<void (DATA const&, DATAS const&...)> const& callback, long int idx)
 		{
 			_toMany<DATAS...>(ToManyCallback<DATAS...>([this, &callback, idx](DATAS const&... args) {
 				callback(to<DATA>(idx), args...);

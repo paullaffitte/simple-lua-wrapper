@@ -87,7 +87,7 @@ slw::Lua::getGlobal(std::string const& name) const
 void
 slw::Lua::pop(int idx) const
 {
-	lua_pop(_state, 1);
+	lua_pop(_state, idx);
 }
 
 bool
@@ -146,7 +146,7 @@ namespace slw {
 
 	template <>
 	void
-	Lua::push(Void a) const
+	Lua::push(Void) const
 	{
 		lua_pushnil(_state);
 	}
