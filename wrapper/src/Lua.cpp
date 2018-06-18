@@ -23,7 +23,7 @@ slw::Lua::_cleanStack() const
 }
 
 slw::Lua const&
-slw::Lua::registerFunction(std::string const& name, slw::Lua::CFunction callback) const
+slw::Lua::registerFunction(std::string const& name, slw::CFunction callback) const
 {
 	lua_pushcfunction(_state, callback);
 	lua_setglobal(_state, name.c_str());
@@ -60,48 +60,6 @@ slw::Lua::getGlobal(std::string const& name) const
 	return lua_getglobal(_state, name.c_str());
 }
 
-int
-slw::Lua::pCall(int nargs, int nresults, int errFunc) const
-{
-	return lua_pcall(_state, nargs, nresults, errFunc);
-}
-
-void
-slw::Lua::pushLightUserData(slw::Lua::LightUserData* lud) const
-{
-	lua_pushlightuserdata(_state, lud);
-}
-
-void
-slw::Lua::pushNumber(slw::Lua::Number number) const
-{
-	lua_pushnumber(_state, number);
-}
-
-void
-slw::Lua::pushInteger(slw::Lua::Integer integer) const
-{
-	lua_pushinteger(_state, integer);
-}
-
-std::string
-slw::Lua::pushString(slw::Lua::String string) const
-{
-	return lua_pushstring(_state, string);
-}
-
-void
-slw::Lua::pushBoolean(slw::Lua::Boolean boolean) const
-{
-	lua_pushboolean(_state, boolean);
-}
-
-void
-slw::Lua::pushNil() const
-{
-	lua_pushnil(_state);
-}
-
 void
 slw::Lua::pop(int idx) const
 {
@@ -121,30 +79,78 @@ slw::Lua::loadFromFile(std::string const& filename) const
 
 namespace slw {
 
+	int
+	Lua::pCall(int nargs, int nresults, int errFunc) const
+	{
+		return lua_pcall(_state, nargs, nresults, errFunc);
+	}
+
 	template <>
-	Lua::LightUserData
-	Lua::to<Lua::LightUserData>(int idx) const
+	void
+	Lua::push(LightUserData* lud) const
+	{
+		lua_pushlightuserdata(_state, lud);
+	}
+
+	template <>
+	void
+	Lua::push(Number number) const
+	{
+		lua_pushnumber(_state, number);
+	}
+
+	template <>
+	void
+	Lua::push(Integer integer) const
+	{
+		lua_pushinteger(_state, integer);
+	}
+
+	template <>
+	void
+	Lua::push(String string) const
+	{
+		lua_pushstring(_state, string);
+	}
+
+	template <>
+	void
+	Lua::push(Boolean boolean) const
+	{
+		lua_pushboolean(_state, boolean);
+	}
+
+	template <>
+	void
+	Lua::push(Void a) const
+	{
+		lua_pushnil(_state);
+	}
+
+	template <>
+	LightUserData
+	Lua::to<LightUserData>(int idx) const
 	{
 		return lua_touserdata(_state, idx);
 	}
 
 	template <>
-	Lua::LightUserDataConst
-	Lua::to<Lua::LightUserDataConst>(int idx) const
+	LightUserDataConst
+	Lua::to<LightUserDataConst>(int idx) const
 	{
 		return lua_topointer(_state, idx);
 	}
 
 	template <>
-	Lua::Boolean
-	Lua::to<Lua::Boolean>(int idx) const
+	Boolean
+	Lua::to<Boolean>(int idx) const
 	{
-		return static_cast<Lua::Boolean>(lua_toboolean(_state, -1));
+		return static_cast<Boolean>(lua_toboolean(_state, -1));
 	}
 
 	template <>
-	Lua::Integer
-	Lua::to<Lua::Integer>(int idx) const
+	Integer
+	Lua::to<Integer>(int idx) const
 	{
 		if (!lua_isinteger(_state, -1)) {
 			throw std::runtime_error("unable to get a variable, not an integer");
@@ -153,8 +159,8 @@ namespace slw {
 	}
 
 	template <>
-	Lua::Number
-	Lua::to<Lua::Number>(int idx) const
+	Number
+	Lua::to<Number>(int idx) const
 	{
 		if (!lua_isnumber(_state, -1)) {
 			throw std::runtime_error("unable to get a variable, not a number");
@@ -166,7 +172,7 @@ namespace slw {
 	float
 	Lua::to<float>(int idx) const
 	{
-		return static_cast<float>(to<Lua::Number>(idx));
+		return static_cast<float>(to<Number>(idx));
 	}
 
 	template <>
