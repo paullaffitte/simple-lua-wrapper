@@ -9,17 +9,12 @@ You can easily load a script from a file
 slw::Script script("./example/scripts/example1.lua");
 ```
 
-Register some C function...
+Register some C function... (or lambdas without capture)
 ``` cpp
-static int l_write(lua_State* L)
-{
+script.getApi().registerFunction("write", [](lua_State* L) {
     std::cout << lua_tostring(L, 1) << std::endl;
     return 0;
-}
-
-...
-
-script.getApi().registerFunction("write", l_write);
+});
 ```
 ...And call it from Lua !
 ``` lua
