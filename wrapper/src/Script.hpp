@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "Lua.hpp"
+#include "Returns.hpp"
 
 namespace slw {
 
@@ -10,18 +11,22 @@ namespace slw {
 		Script() = default;
 		Script(std::string const& filename);
 
-		template <typename RETURN_CALLBACK, typename... ARGS>
-		void call(std::string const& functionName, ARGS const&... args)
+		template <typename RETURNS, typename... ARGS>
+		void call(std::string const& functionName, ARGS const&... args, typename RETURNS::Callback const& callback)
 		{
 			unsigned int argsNb;
+			unsigned int returnsNb;
 
 			_api.getGlobal(functionName);
 
 			argsNb = _api.pushMany<ARGS...>(args...);
+			returnsNb = RETURNS::countReturns();
 
-			_api.pCall(argsNb, 1, 0);
-			std::cout << _api.to<std::string>(-1) << std::endl;
-			_api.pop(1);
+			_api.pCall(argsNb, returnsNb, 0);
+
+			RETURNS()(_api, callback);
+
+			_api.clearStack();
 		};
 
 		Lua const& getApi() const;

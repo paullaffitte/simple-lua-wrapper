@@ -31,6 +31,9 @@ namespace slw {
 		explicit Lua(std::string const& filename);
 		~Lua();
 
+		template <typename... DATAS>
+		using ToManyCallback = std::function<void (DATAS const&...)>;
+
 		bool loadFromFile(std::string const& filename) const;
 
 		template <typename DATA>
@@ -40,7 +43,7 @@ namespace slw {
 			this->_putOnStack(varName);
 			result = to<DATA>(-1);
 
-			_cleanStack();
+			clearStack();
 			return result;
 		}
 
@@ -49,9 +52,10 @@ namespace slw {
 		int getGlobal(std::string const& name) const;
 		int pCall(int nargs, int nresults, int errFunc) const;
 		void pop(int idx) const;
+		void clearStack() const;
 
 		template <typename DATA>
-		void push(DATA data) const {
+		void push(DATA) const {
 			throw std::runtime_error(std::string("Unable to push on stack, type with mangled name '") + typeid(DATA).name() + "' is invalid.");
 		}
 
@@ -59,7 +63,8 @@ namespace slw {
 		unsigned int
 		pushMany(DATAS const&... datas)
 		{
-			return _pushMany<DATAS...>(0, datas...);
+			_pushMany<DATAS...>(datas...);
+			return sizeof...(DATAS);
 		};
 
 		template <typename DATA>
@@ -69,10 +74,10 @@ namespace slw {
 		}
 
 		template <typename... DATAS>
-		unsigned int
-		to(std::function<void (DATAS const&...)> callback)
+		void
+		toMany(ToManyCallback<DATAS...> const& callback)
 		{
-			return _to<DATAS...>(callback);
+			_toMany<DATAS...>(callback, -1 - sizeof...(DATAS));
 		};
 
 	private:
@@ -81,36 +86,24 @@ namespace slw {
 
 		void _checkState(std::string const& message) const;
 		void _putOnStack(std::string const& varName) const;
-		void _cleanStack() const;
 
-		template <typename DATA, typename... DATAS>
-		unsigned int
-		_pushMany(unsigned int datasNb, DATA const& data, DATAS const&... datas)
-		{
-			this->push<DATA>(data);
-			return _pushMany<DATAS...>(datasNb + 1, datas...);
-		};
-
-		template <typename DATA>
-		unsigned int
-		_pushMany(unsigned int datasNb, DATA const& data)
-		{
-			this->push<DATA>(data);
-			return datasNb + 1;
-		};
-
-		template <typename=void>
-		unsigned int
-		_pushMany(unsigned int)
-		{
-			return 0;
-		};
-
+		template <typename=void> void _pushMany() {};
 		template <typename DATA, typename... DATAS>
 		void
-		_to(std::function<void (DATA const&, DATAS const&...)> callback)
+		_pushMany(DATA const& data, DATAS const&... datas)
 		{
-			return to<DATA>(callback);
+			this->push<DATA>(data);
+			_pushMany<DATAS...>(datas...);
+		};
+
+		template <typename=void> void _toMany(std::function<void ()> const& callback, int) { callback(); };
+		template <typename DATA, typename... DATAS>
+		void
+		_toMany(std::function<void (DATA const&, DATAS const&...)> const& callback, int idx)
+		{
+			_toMany<DATAS...>(ToManyCallback<DATAS...>([this, &callback, idx](DATAS const&... args) {
+				callback(to<DATA>(idx), args...);
+			}), ++idx);
 		};
 	};
 }

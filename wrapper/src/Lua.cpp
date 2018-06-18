@@ -17,7 +17,7 @@ slw::Lua::~Lua()
 }
 
 void
-slw::Lua::_cleanStack() const
+slw::Lua::clearStack() const
 {
 	lua_pop(_state, lua_gettop(_state));
 }
@@ -145,27 +145,27 @@ namespace slw {
 	Boolean
 	Lua::to<Boolean>(int idx) const
 	{
-		return static_cast<Boolean>(lua_toboolean(_state, -1));
+		return static_cast<Boolean>(lua_toboolean(_state, idx));
 	}
 
 	template <>
 	Integer
 	Lua::to<Integer>(int idx) const
 	{
-		if (!lua_isinteger(_state, -1)) {
-			throw std::runtime_error("unable to get a variable, not an integer");
+		if (!lua_isinteger(_state, idx)) {
+			throw std::runtime_error("Unable to get a variable, not an integer");
 		}
-		return lua_tointeger(_state, -1);
+		return lua_tointeger(_state, idx);
 	}
 
 	template <>
 	Number
 	Lua::to<Number>(int idx) const
 	{
-		if (!lua_isnumber(_state, -1)) {
-			throw std::runtime_error("unable to get a variable, not a number");
+		if (!lua_isnumber(_state, idx)) {
+			throw std::runtime_error("Unable to get a variable, not a number");
 		}
-		return lua_tonumber(_state, -1);
+		return lua_tonumber(_state, idx);
 	}
 
 	template <>
@@ -176,12 +176,19 @@ namespace slw {
 	}
 
 	template <>
+	String
+	Lua::to<String>(int idx) const
+	{
+		if (!lua_isstring(_state, -1)) {
+			throw std::runtime_error("Unable to get a variable, not a string");
+		}
+		return lua_tostring(_state, idx);
+	}
+
+	template <>
 	std::string
 	Lua::to<std::string>(int idx) const
 	{
-		if (!lua_isstring(_state, -1)) {
-			throw std::runtime_error("unable to get a variable, not a string");
-		}
-		return std::string(lua_tostring(_state, -1));
+		return std::string(this->to<String>(idx));
 	}
 }
