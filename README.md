@@ -1,6 +1,6 @@
 # Simple Lua Wrapper
 
-The goal of this library is to provide a simple way to execute Lua scripts in a perfect osmosis along with C++ source code.
+The goal of this library is to provide a simple way to execute Lua scripts in a perfect osmosis alongside with C++.
 
 ---
 
