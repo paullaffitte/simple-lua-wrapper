@@ -31,11 +31,9 @@
 #include <functional>
 #include <unordered_map>
 
-extern "C" {
-	#include "lua.h"
-	#include "lauxlib.h"
-	#include "lualib.h"
-}
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 namespace slw {
 

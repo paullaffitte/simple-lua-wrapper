@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -e
+
+lua_version=${lua_version:-5.3.4}
+lua_tar=lua-${lua_version}.tar.gz
+lua_url=https://www.lua.org/ftp/${lua_tar}
+lua_install_root=$(pwd)
+
+curl ${lua_url} >${lua_tar}
+tar -xvf ${lua_tar}
+rm ${lua_tar}

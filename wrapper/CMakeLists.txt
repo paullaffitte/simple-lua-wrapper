@@ -22,21 +22,36 @@
 ## SOFTWARE.
 ##
 
-cmake_minimum_required(VERSION 2.8)
-project(simple-lua-wrapper)
+cmake_minimum_required(VERSION 3.0)
+project(SimpleLuaWrapper)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-W -Wall -Wextra")
-
-include_directories(
-        ../vendor/lua
-        example/src
-)
-
-file(GLOB LUA_SRCS ../vendor/lua/*.c)
+# SIMPLE LUA WRAPPER ##################
 file(GLOB_RECURSE SRCS ./src/*)
+add_library(SimpleLuaWrapper STATIC ${SRCS})
+#######################################
 
-add_library(lua STATIC ${LUA_SRCS})
-add_library(simple-lua-wrapper STATIC ${SRCS})
+set_property(TARGET SimpleLuaWrapper PROPERTY CXX_STANDARD 14)
 
-target_link_libraries(simple-lua-wrapper lua)
+#target_include_directories(SimpleLuaWrapper PUBLIC ../vendor/lua)
+target_include_directories(SimpleLuaWrapper PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/example/src>
+    $<INSTALL_INTERFACE:include/slw>) # TODO add PUBLIC include and make src PRIVATE
+
+target_compile_options(SimpleLuaWrapper PRIVATE -W -Wall -Wextra)
+
+add_subdirectory(vendor/modern-cmake-lua)
+#target_link_libraries(SimpleLuaWrapper PUBLIC lua)
+target_link_libraries(SimpleLuaWrapper PUBLIC cmake_lua)
+
+install(EXPORT SimpleLuaWrapperTargets
+    FILE SimpleLuaWrapperTargets.cmake
+    NAMESPACE SimpleLuaWrapper::
+    DESTINATION lib/cmake/SimpleLuaWrapper
+    )
+
+install(TARGETS SimpleLuaWrapper EXPORT SimpleLuaWrapperTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+        )

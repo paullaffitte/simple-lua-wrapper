@@ -23,7 +23,16 @@
  */
 
 #include <iostream>
-#include "slw/Script.hpp"
+#include "../../wrapper/src/Script.hpp"
+//#include "../../wrapper/src/Script.hpp"
+//#include "Lua.hpp"
+//
+//extern "C" {
+//	#include "lua.h"
+//	#include "lauxlib.h"
+//	#include "lualib.h"
+//}
+
 
 int main()
 {
